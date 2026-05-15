@@ -1,0 +1,525 @@
+### APLET INVENTORY ###
+apps:
+  git:
+    category: [development, version-control]
+    tags: [essential, cli]
+    managers:
+      apt:
+      pacman:
+      dnf:
+      zypper:
+      brew:
+      choco:
+  pyenv:
+    candidate: pyenv
+    category: [development, python, runtimes]
+    tags: [python, cli]
+    managers:
+    installers: 
+      arch:
+        # List of actions
+        - cmd:
+          - "curl -fsSL https://pyenv.run | bash"
+        - patch_file:
+          - '~/.bashrc'
+          - 'pyenv-init'
+          - 'export PYENV_ROOT="$HOME/.pyenv"'
+          - '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"'
+          - 'eval "$(pyenv init - bash)"'
+        - pacman:
+          - base-devel
+          - openssl
+          - zlib
+          - xz
+          - tk
+          - zstd
+        - cmd:
+          - pyenv update
+          - pyenv install 3.11 3.14
+          - python global 3.14
+      ubuntu_debian:
+        # List of actions
+        - cmd:
+          - "curl -fsSL https://pyenv.run | bash"
+        - patch_file:
+          - '~/.bashrc'
+          - 'pyenv-init'
+          - 'export PYENV_ROOT="$HOME/.pyenv"'
+          - '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"'
+          - 'eval "$(pyenv init - bash)"'
+        - apt:
+          - make
+          - build-essential
+          - libssl-dev
+          - zlib1g-dev
+          - libbz2-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - curl
+          - git
+          - libncursesw5-dev
+          - xz-utils
+          - tk-dev
+          - libxml2-dev
+          - libxmlsec1-dev
+          - libffi-dev
+          - liblzma-dev
+        - cmd:
+          - pyenv update
+          - pyenv install 3.11 3.14
+          - python global 3.14
+      centos: 
+        # List of actions
+        - cmd:
+          - "curl -fsSL https://pyenv.run | bash"
+        - patch_file:
+          - '~/.bashrc'
+          - 'pyenv-init'
+          - 'export PYENV_ROOT="$HOME/.pyenv"'
+          - '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"'
+          - 'eval "$(pyenv init - bash)"'
+        - yum: gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
+        - cmd:
+          - pyenv update
+          - pyenv install 3.11 3.14
+          - python global 3.14
+      opensuse: 
+        # List of actions
+        - cmd:
+          - "curl -fsSL https://pyenv.run | bash"
+        - patch_file:
+          - '~/.bashrc'
+          - 'pyenv-init'
+          - 'export PYENV_ROOT="$HOME/.pyenv"'
+          - '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"'
+          - 'eval "$(pyenv init - bash)"'
+        - zypper: 
+          - gcc
+          - automake
+          - bzip2
+          - libbz2-devel
+          - xz
+          - xz-devel
+          - openssl-devel
+          - ncurses-devel 
+          - readline-devel
+          - zlib-devel
+          - tk-devel
+          - libffi-devel
+          - sqlite3-devel
+          - gdbm-devel
+          - make
+          - findutils
+          - patch
+          - libzstd-devel
+        - cmd:
+          - pyenv update
+          - pyenv install 3.11 3.14
+          - python global 3.14
+      macos:
+        # List of actions
+        - cmd:
+          - "curl -fsSL https://pyenv.run | bash"
+        - patch_file:
+          - '~/.bashrc'
+          - 'pyenv-init'
+          - 'export PYENV_ROOT="$HOME/.pyenv"'
+          - '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"'
+          - 'eval "$(pyenv init - bash)"'
+        - cmd:
+          - 'xcode-select --install'
+        - brew: openssl readline sqlite3 xz tcl-tk@8 libb2 zstd zlib pkgconfig
+        - cmd:
+          - pyenv update
+          - pyenv install 3.11 3.14
+          - python global 3.14
+      win:
+        - cmd:
+          - 'Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"'
+          - pyenv update
+          - pyenv install 3.11 3.14
+          - python global 3.14
+  pipx:
+    candidate: pipx
+    category: [development, python, tooling]
+    tags: [python, cli, essential]
+    managers:
+      brew:
+      scoop:
+    installers:
+      linux:
+      - cmd:
+        - 'python3 -m pip install --user pipx'
+        - 'python3 -m pipx ensurepath'
+      macos:
+      - brew: pipx
+      - cmd:
+        - 'pipx ensurepath'
+      win:
+      - scoop: pipx
+      - cmd: 
+        - 'pipx ensurepath'
+  nodejs:
+    candidate: nodejs
+    category: [development, javascript, runtimes]
+    tags: [javascript, cli, runtime]
+    managers:
+    installers:
+      macos_linux:
+        - cmd:
+          - 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{cmd:curl -s "https://api.github.com/repos/nvm-sh/nvm/releases/latest" | jq -r ".tag_name"}}/install.sh | bash'
+          - nvm install latest
+      win:
+        - cmd:
+          - "irm https://community.chocolatey.org/install.ps1|iex"
+        - choco: nodejs    
+  yay:
+    dependencies:
+    - git
+    candidate: yay
+    category: [system, package-management, arch]
+    tags: [arch, aur, cli]
+    managers:
+    installers:
+      arch:
+      - pacman: git base-devel
+      - cmd:
+        - git clone https://aur.archlinux.org/yay-bin.git ~/.local/share
+        - cd ~/.local/share/yay-bin && makepkg -si
+  flatpak:
+    candidate: flatpak
+    category: [system, package-management, universal]
+    tags: [cross-platform, sandboxed, cli]
+    managers:
+      pacman:
+      apt:
+    installers:
+      ubuntu_debian:
+        - apt: flatpak gnome-software-plugin-flatpak
+  snap:
+    candidate: snapd
+    category: [system, package-management, universal]
+    tags: [cross-platform, sandboxed, cli]
+    managers:
+      apt:
+      dnf:
+    installers:
+      arch:
+      - cmd:
+        - git clone https://aur.archlinux.org/snapd.git ~/.local/share
+        - cd ~/.local/share/snapd && makepkg -si
+        - sudo systemctl enable --now snapd.socket
+        - sudo systemctl enable --now snapd.apparmor.service # Confinement (app sandboxing)
+  flameshot:
+    candidate: flameshot
+    category: [productivity, utilities, screenshots]
+    tags: [gui, desktop]
+    managers:
+      apt:
+      pacman:
+      dnf:
+      zypper:
+      brew:
+      scoop:
+  sublime-text:
+    # wiki: https://www.sublimetext.com/docs/linux_repositories.html
+    candidate: sublime-text
+    category: [development, editors]
+    tags: [gui, recommended]
+    managers:
+      apt:
+        # candidate: 'sublime-text' # Override root candidate
+        repo: "Types: deb\nURIs: https://download.sublimetext.com/\nSuites: apt/stable/\nSigned-By: /etc/apt/keyrings/sublimehq-pub.asc"
+        gpg: https://download.sublimetext.com/sublimehq-pub.gpg
+      pacman: 
+        repo: "\n[sublime-text]\nServer = https://download.sublimetext.com/arch/stable/x86_64"
+        gpg: https://download.sublimetext.com/sublimehq-pub.gpg
+      yum:
+        # yum, dnf, zypper use rpm channel and gpg
+        repo: "https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo"
+        gpg: "https://download.sublimetext.com/sublimehq-rpm-pub.gpg"
+      dnf:
+        repo: "https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo"
+        gpg: "https://download.sublimetext.com/sublimehq-rpm-pub.gpg"
+      zypper:
+        repo: "https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo"
+        gpg: "https://download.sublimetext.com/sublimehq-rpm-pub.gpg"
+      brew:
+        candidate: "--cask sublime-text"
+      choco:
+        candidate: "sublimetext4"
+      scoop:
+        bucket_name: "extras"
+        candidate: "extras/sublime-text"
+    installers:
+  docker:
+    candidate: docker
+    category: [development, containers]
+    tags: [container, cli, devops]
+    managers:
+    installers:
+      arch:
+        - pacman: docker docker-compose
+        - cmd:
+          - sudo systemctl enable docker.socket
+          - sudo systemctl start docker.socket
+          - sudo docker info
+          - sudo usermod -aG docker $(whoami)
+      ubuntu:
+        - cmd:
+          - sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc | cut -f1)
+        - apt: ca-certificates curl
+        - cmd:
+          - sudo install -m 0755 -d /etc/apt/keyrings
+          - sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          - sudo chmod a+r /etc/apt/keyrings/docker.asc
+        - patch_file:
+          - /etc/apt/sources.list.d/docker.sources 
+          - docker
+          - 'Types: deb'
+          - 'URIs: https://download.docker.com/linux/ubuntu\nSuites: {{cmd:. /etc/os-release && printf %s "${UBUNTU_CODENAME:-$VERSION_CODENAME}"}}'
+          - 'Components: stable\nArchitectures: {{cmd:dpkg --print-architecture}}'
+          - 'Signed-By: /etc/apt/keyrings/docker.asc'
+        - apt:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        - cmd:
+          - sudo systemctl enable docker.socket
+          - sudo usermod -aG docker $(whoami)
+      debian:
+        - cmd:
+          - sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-doc podman-docker containerd runc | cut -f1)
+        - apt: ca-certificates curl
+        - cmd:
+          - sudo install -m 0755 -d /etc/apt/keyrings
+          - sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+          - sudo chmod a+r /etc/apt/keyrings/docker.asc
+        - patch_file:
+          - /etc/apt/sources.list.d/docker.sources
+          - docker
+          - 'Types: deb'
+          - 'URIs: https://download.docker.com/linux/debian'
+          - 'Suites: {{cmd:. /etc/os-release && echo "$VERSION_CODENAME"}}'
+          - 'Components: stable'
+          - 'Architectures: {{cmd:dpkg --print-architecture}}'
+          - 'Signed-By: /etc/apt/keyrings/docker.asc'
+        - apt: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        - cmd:
+          - sudo systemctl enable docker.socket
+          - sudo usermod -aG docker $(whoami)
+  httpie:
+    candidate: httpie
+    category: [development, api, clients]
+    tags: [cli, http, testing]
+    preference:
+      - pipx
+    managers:
+      pipx:
+        candidate: httpie
+    dependencies: ['pipx']
+  rich: # Beautiful CLI interfaces
+    candidate: rich
+    category: [development, python, libraries]
+    tags: [python, tui, library]
+    managers:
+      pip:
+  pyyaml:
+    candidate: pyyaml
+    category: [development, python, libraries]
+    tags: [python, yaml, library]
+    managers:
+      pip: 
+        candidate: PyYAML
+  beautiful-soup:
+    candidate: beautifulsoup4
+    category: [development, python, libraries]
+    tags: [python, html, scraping]
+    managers:
+      pip:
+  niri:
+    candidate: niri
+    category: [system, desktop, compositors]
+    tags: [wayland, tiling, gui]
+    installers:
+      fedora:
+      - cmd:
+        - 'sudo dnf copr enable avengemedia/dms'
+      - dnf: niri dms
+      - cmd:
+        - 'systemctl --user add-wants niri.service dms'
+      arch:
+      - pacman: niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk alacritty dms-shell-niri matugen cava qt6-multimedia-ffmpeg
+      - cmd:
+        - 'systemctl --user add-wants niri.service dms'
+      ubuntu: # Requires 25.10 or above
+        - cmd:
+          - 'echo "Required Ubuntu 25.10 or above"'
+          - 'sudo add-apt-repository ppa:avengemedia/danklinux'
+          - 'sudo add-apt-repository ppa:avengemedia/dms'
+        - apt: niri dms
+  steam:
+    candidate: steam
+    category: [gaming, launchers]
+    tags: [gui, gaming, desktop]
+    managers:
+      apt:
+      pacman:
+      dnf:
+      flatpak:
+        candidate: com.valvesoftware.Steam
+  tmux:
+    candidate: tmux
+    category: [development, terminal, multiplexers]
+    tags: [cli, terminal, essential]
+    managers:
+      apt:
+      pacman:
+      yum:
+      dnf:
+      zypper:
+      brew:
+  joplin:
+    candidate: joplin
+    category: [productivity, notes]
+    tags: [gui, markdown, sync]
+    managers:
+      git:
+        url: https://github.com/laurent22/joplin.git
+        # candidate not specified as it is available for all platforms
+      choco:
+      flatpak:
+        candidate: org.joplinapp.joplin
+    installers:
+      linux:
+      - cmd:
+        - 'wget -O - https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh | bash'
+  opencode:
+    candidate: opencode
+    category: [development, ai, tools]
+    tags: [cli, ai, coding]
+    managers:
+      brew:
+        candidate: anomalyco/tap/opencode
+      npm:
+        candidate: opencode-ai
+    installers:
+      linux:
+      - cmd:
+        - curl -fsSL https://opencode.ai/install | bash
+  vscode:
+    candidate: code
+    category: [development, editors]
+    tags: [gui, editor, popular]
+    managers:
+      # apt: Requires adding the repo manually or downloading .deb from web
+      dnf:
+      brew: 
+        candidate: visual-studio-code
+      yay:
+        candidate: visual-studio-code-bin
+      choco: 
+        candidate: vscode
+      snap:
+        classic: true
+    installers:
+  openspec:
+    candidate: openspec
+    category: [development, ai, tools]
+    tags: [cli, ai, specification]
+    managers:
+      npm:
+        candidate: '@fission-ai/openspec@latest'
+    installers:
+    dependencies: ['nodejs']
+  pycharm:
+    candidate: pycharm-ce
+    category: [development, ide, python]
+    tags: [gui, python, jetbrains]
+    managers:
+      pacman:
+        candidate: pycharm-community-edition
+      snap:
+        candidate: pycharm-community
+        classic: true
+      flatpak:
+        candidate: com.jetbrains.PyCharm-Community
+      brew:
+    installers:
+  keepassxc:
+    candidate: keepassxc
+    category: [security, password-managers]
+    tags: [gui, desktop, encryption]
+    managers:
+      apt:
+      dnf:
+      pacman:
+      snap:
+      flatpak:
+        candidate: org.keepassxc.KeePassXC
+      choco:
+      brew:
+    installers:
+  krita:
+    candidate: krita
+    category: [media, graphics, drawing]
+    tags: [gui, art, creative]
+    managers:
+      apt:
+      pacman:
+      dnf:
+      flatpak:
+        candidate: org.kde.krita
+      snap:
+      brew:
+    installers:
+  brave:
+    candidate: brave
+    category: [internet, browsers]
+    tags: [gui, browser, privacy]
+    managers:
+      snap:
+      flatpak:
+        candidate: com.brave.Browser
+      zypper:
+        repo: https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+        candidate: brave-browser
+      yay:
+        candidate: brave-bin
+      apt:
+        candidate: brave
+        gpg: https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+        repo: 'Types: deb\nURIs: https://brave-browser-apt-release.s3.brave.com\nSuites: stable\nComponents: main\nArchitectures: amd64 arm64\nSigned-By: /usr/share/keyrings/brave-browser-archive-keyring.gpg'
+    installers:
+      linux:
+        - cmd:
+          - 'curl -fsS https://dl.brave.com/install.sh | sh'
+  firefox:
+    candidate: firefox
+    category: [internet, browsers]
+    tags: [gui, browser, essential]
+    managers:
+      apt:
+      pacman:
+      dnf:
+      flatpak:
+        candidate: org.mozilla.firefox
+      brew:
+      choco:
+    installers:
+  obs:
+    candidate: obs-studio
+    category: [media, video, streaming]
+    tags: [gui, recording, streaming]
+    managers:
+      apt:
+      pacman:
+      dnf:
+      choco:
+      flatpak:
+        candidate: com.obsproject.Studio
+      brew:
+        candidate: obs
+    installers:

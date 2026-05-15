@@ -1,0 +1,40 @@
+.aplet-navbar-logo {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+  min-width: 0;
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+.aplet-navbar-logo__icon {
+  flex: 0 0 auto;
+  height: 2rem;
+  object-fit: contain;
+  width: 2rem;
+}
+
+.aplet-navbar-logo__title {
+  flex: 0 1 auto;
+  height: 1.7rem;
+  max-width: min(11rem, 30vw);
+  object-fit: contain;
+  object-position: left center;
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .aplet-navbar-logo {
+    gap: 0.35rem;
+  }
+
+  .aplet-navbar-logo__icon {
+    height: 1.65rem;
+    width: 1.65rem;
+  }
+
+  .aplet-navbar-logo__title {
+    height: 1.35rem;
+    max-width: min(8rem, 42vw);
+  }
+}

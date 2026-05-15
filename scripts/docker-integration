@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+DOCKER_BIN="${DOCKER:-docker}"
+
+DEFAULT_TARGETS=(apt-debian apt-ubuntu dnf yum zypper pacman)
+
+declare -A TARGET_MANAGERS=(
+  [apt-debian]=apt
+  [apt-ubuntu]=apt
+  [dnf]=dnf
+  [yum]=yum
+  [zypper]=zypper
+  [pacman]=pacman
+)
+
+expand_targets() {
+  if (($# == 0)); then
+    printf '%s\n' "${DEFAULT_TARGETS[@]}"
+    return
+  fi
+
+  for target in "$@"; do
+    case "$target" in
+      all)
+        printf '%s\n' "${DEFAULT_TARGETS[@]}"
+        ;;
+      apt)
+        printf '%s\n' apt-debian apt-ubuntu
+        ;;
+      *)
+        printf '%s\n' "$target"
+        ;;
+    esac
+  done
+}
+
+mapfile -t TARGETS < <(expand_targets "$@")
+
+if ! command -v "$DOCKER_BIN" >/dev/null 2>&1; then
+  printf 'Docker command not found: %s\n' "$DOCKER_BIN" >&2
+  exit 127
+fi
+
+for target in "${TARGETS[@]}"; do
+  manager="${TARGET_MANAGERS[$target]:-}"
+  if [[ -z "$manager" ]]; then
+    printf 'Unknown integration target: %s\n' "$target" >&2
+    printf 'Known targets: all apt %s\n' "${DEFAULT_TARGETS[*]}" >&2
+    exit 2
+  fi
+
+  dockerfile="$REPO_ROOT/docker/integration/$target.Dockerfile"
+  image="aplet-it-$target"
+
+  printf '\n==> Building %s\n' "$image"
+  "$DOCKER_BIN" build -f "$dockerfile" -t "$image" "$REPO_ROOT"
+
+  printf '\n==> Testing %s with %s\n' "$target" "$manager"
+  "$DOCKER_BIN" run --rm \
+    --mount "type=bind,src=$REPO_ROOT,dst=/src,readonly" \
+    -e HOME=/tmp/aplet-home \
+    -e PYTHONDONTWRITEBYTECODE=1 \
+    -e APLET_REAL_INSTALL_TESTS=1 \
+    -e APLET_TEST_MANAGER="$manager" \
+    "$image" \
+    bash -lc 'python3 -m venv /tmp/venv && source /tmp/venv/bin/activate && pip install --upgrade pip && pip install "/src[dev]" && pytest -m integration /src/tests/integration --cache-dir=/tmp/pytest-cache'
+done
