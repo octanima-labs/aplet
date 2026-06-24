@@ -1,26 +1,15 @@
 from urllib.parse import quote, urlparse
 from pathlib import Path
 from typing import Never
-from rich.console import Group
-from rich.panel import Panel
-from rich.text import Text
-from rich.tree import Tree
-import fnmatch
 import json
 import shlex
 import shutil
-import tarfile
 import tempfile
-import zipfile
 import os
 
-from .inventory import App
 from .repositories import GitRepo, GithubRepo, GitlabRepo
-from .runners import Script, Probe
 from . import utils as ut
 import re
-import requests
-import yaml
 
 
 logger = ut.get_logger(__name__)
@@ -447,22 +436,46 @@ class Pacman(_PackageManager):
             ut.Display.print_list()
         return [entry['fingerprint'] for entry in key_entries]
 
+    def _primary_fingerprints_from_key_file(key_path: Path) -> list[str]:
+        result = ut.Shell.run(f'gpg --show-keys --with-colons {shlex.quote(str(key_path))}', check=False)
+        if result.returncode != 0:
+            return []
+
+        fingerprints: list[str] = []
+        expecting_primary_fingerprint = False
+        for line in result.stdout.splitlines():
+            fields = line.split(':')
+            record_type = fields[0] if fields else ''
+            if record_type == 'pub':
+                expecting_primary_fingerprint = True
+                continue
+            if record_type == 'sub':
+                expecting_primary_fingerprint = False
+                continue
+            if record_type == 'fpr' and expecting_primary_fingerprint and len(fields) > 9:
+                fingerprint = fields[9].strip().upper()
+                if fingerprint and fingerprint not in fingerprints:
+                    fingerprints.append(fingerprint)
+                expecting_primary_fingerprint = False
+        return fingerprints
+
     def add_gpg(url: str):
         """Adds a GPG key from the package manager configuration"""
-        existing_keys = {entry['fingerprint'] for entry in Pacman._list_key_entries()}
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=Path(urlparse(url).path).suffix or '.gpg')
         temp_path = Path(temp_file.name)
         temp_file.close()
         try:
             ut.Shell.run(f'curl -fsSL "{url}" -o "{temp_path}"')
+            primary_keys = Pacman._primary_fingerprints_from_key_file(temp_path)
+            existing_keys = {entry['fingerprint'] for entry in Pacman._list_key_entries()} if not primary_keys else set()
             Pacman._run_cmd(f'pacman-key --add "{temp_path}"')
-            imported_keys = sorted({entry['fingerprint'] for entry in Pacman._list_key_entries()} - existing_keys)
-            if len(imported_keys) == 1:
-                Pacman._run_cmd(f'pacman-key --lsign-key {imported_keys[0]}')
-            elif len(imported_keys) == 0:
-                logger.error('Imported key but no new primary key was detected for local signing')
+            if not primary_keys:
+                primary_keys = sorted({entry['fingerprint'] for entry in Pacman._list_key_entries()} - existing_keys)
+            if primary_keys:
+                for fingerprint in primary_keys:
+                    Pacman._run_cmd(f'pacman-key --lsign-key {fingerprint}')
             else:
-                logger.error('Imported key but multiple new primary keys were detected; skipped local signing')
+                logger.error('Imported key but no new primary key was detected for local signing')
         finally:
             temp_path.unlink(missing_ok=True)
 

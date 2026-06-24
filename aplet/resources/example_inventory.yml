@@ -149,6 +149,10 @@ apps:
       brew:
       scoop:
     installers:
+      arch:
+      - pacman: python-pipx
+      - cmd:
+        - 'pipx ensurepath'
       linux:
       - cmd:
         - 'python3 -m pip install --user pipx'

@@ -1,4 +1,6 @@
 from pathlib import Path
+import importlib
+import sys
 
 
 class TestUtils:
@@ -25,6 +27,9 @@ class TestUtils:
 
     def test_conf_expands_default_repo_dir(self, modules):
         assert modules.utils.Config.data['DEFAULT_REPO_DIR'] == modules.home / 'Apps'
+
+    def test_utils_does_not_import_file_helper_at_module_load(self, modules):
+        assert 'aplet.file_helper' not in sys.modules
 
     def test_inventory_icon_resolver_loads_icons_from_icons_file(self, modules, monkeypatch, tmp_path):
         icons_file = tmp_path / 'icons.yml'
@@ -377,8 +382,9 @@ class TestUtils:
         target = tmp_path / 'config.sh'
         helper_calls = []
         monkeypatch.setattr(modules.utils.Files, '_run_privileged_helper', lambda payload: helper_calls.append(payload))
+        file_helper = importlib.import_module('aplet.file_helper')
         monkeypatch.setattr(
-            modules.utils.file_helper,
+            file_helper,
             'patch_file_impl',
             lambda *args, **kwargs: (_ for _ in ()).throw(PermissionError('denied')),
         )

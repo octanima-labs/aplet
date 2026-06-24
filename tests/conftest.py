@@ -6,8 +6,8 @@ from types import SimpleNamespace
 import pytest
 
 
-def completed(stdout: str = '', stderr: str = ''):
-    return SimpleNamespace(stdout=stdout, stderr=stderr)
+def completed(stdout: str = '', stderr: str = '', returncode: int = 0):
+    return SimpleNamespace(stdout=stdout, stderr=stderr, returncode=returncode)
 
 
 @pytest.fixture(autouse=True)

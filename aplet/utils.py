@@ -12,8 +12,6 @@ import sys
 import tuning
 import yaml
 
-from . import file_helper
-
 
 PACKAGE_DIR: Path = Path(__file__).parent
 RESOURCE_DIR: Path = PACKAGE_DIR / 'resources'
@@ -400,6 +398,7 @@ class Files:
         target_path = Files.expand_path(path)
         if Files._can_write_directly(target_path):
             try:
+                from . import file_helper
                 file_helper.write_text_impl(target_path, content, create_parents=create_parents)
                 return
             except PermissionError:
@@ -418,6 +417,7 @@ class Files:
         target_path = Files.expand_path(path)
         if Files._can_remove_directly(target_path):
             try:
+                from . import file_helper
                 file_helper.remove_path_impl(target_path, missing_ok=missing_ok)
                 return
             except PermissionError:
@@ -442,6 +442,7 @@ class Files:
         lines = Files._expand_patch_placeholders(lines)
         if Files._can_patch_directly(target_path):
             try:
+                from . import file_helper
                 file_helper.patch_file_impl(target_path, app_name, block_id, lines)
                 return
             except PermissionError:

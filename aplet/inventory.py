@@ -3,11 +3,10 @@ from rich.console import Group
 from rich.panel import Panel
 from rich.text import Text
 from rich.tree import Tree
-import fnmatch
-import os
 import re
 import shlex
 import shutil
+import subprocess
 import yaml
 
 from .runners import SCRIPT_ERROR, SCRIPT_INTERRUPTED, SCRIPT_OK, Script, Probe
@@ -1258,6 +1257,11 @@ class AppInventory:
             label = 'Install' if operation == 'install' else 'Uninstall'
             logger.warning(f"{label} interrupted by user")
             return SCRIPT_INTERRUPTED, None
+        except subprocess.CalledProcessError as exc:
+            action_label = 'install' if operation == 'install' else 'remove'
+            logger.error(f"Failed to {action_label} '{app.name}'")
+            logger.error(_manager_failure_message(operation, app.name, manager_name, exc))
+            return SCRIPT_ERROR, None
         except Exception as exc:
             action_label = 'install' if operation == 'install' else 'remove'
             logger.error(f"Failed to {action_label} '{app.name}'")

@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=77", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
 
 [project]
 name = "aplet"
@@ -39,11 +39,19 @@ Documentation = "https://octanima-labs.github.io/aplet/"
 [project.scripts]
 aplet = "aplet.cli:main"
 
-[tool.setuptools.packages.find]
-include = ["aplet*"]
+[tool.hatch.build.targets.wheel]
+packages = ["aplet"]
+include = [
+  "aplet/resources/*.conf",
+  "aplet/resources/*.yml",
+]
 
-[tool.setuptools.package-data]
-aplet = ["resources/*.conf", "resources/*.yml"]
+[tool.hatch.build.targets.sdist]
+include = [
+  "/aplet",
+  "/README.md",
+  "/pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 markers = [

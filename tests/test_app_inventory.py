@@ -1801,12 +1801,15 @@ class TestAppInventory:
 
         saved = []
         monkeypatch.setattr(api, 'save', lambda path: saved.append(path))
+        exception_logs = []
+        monkeypatch.setattr(modules.inventory.logger, 'exception', lambda *args, **kwargs: exception_logs.append(args))
 
         status = api.install('demo')
 
         assert status == modules.runners.SCRIPT_ERROR
         assert app.installed is None
         assert saved == []
+        assert exception_logs == []
         assert "Failed to install 'demo'" in caplog.text
         assert "Package-manager install failed for 'demo' via 'brew': Command 'demo install' returned non-zero exit status 1." in caplog.text
         assert 'stderr:\nmanager stderr' in caplog.text

@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Entry Points
-- First of all, activate virtual environment: `source .venv/bin/activate` 
+- Use `hatch` as environment manager.
 - Run the CLI as `python3 -m aplet ...` from the repo root, or as `aplet ...` after installation.
 - `aplet/cli.py` is the wired CLI entrypoint. `aplet/managers.py` contains the package-manager adapters, `aplet/inventory.py` contains `AppInventory`, and `aplet/utils.py` contains config loading and shell helpers.
 - `apps/` holds reference shell snippets for package setup; nothing under `aplet/` imports those scripts.
@@ -14,10 +14,10 @@
 
 ## Verification
 
-- Use `pytest` to create the test suite in the dir `tests/`. Test only 
-- The reliable lightweight syntax check is `python3 -m py_compile aplet/*.py`.
-- Useful smoke tests that avoid system mutation: `HOME=$PWD python3 -m aplet --help`, `HOME=$PWD python3 -m aplet inv`, and `HOME=$PWD python3 -m aplet inv search -n sublime-text`.
-- Do not use `python3 -m aplet install ...` for routine verification. The code shells out with `subprocess.run(..., shell=True, check=True)` and backend methods can write to `/etc` or invoke the real package manager.
+- Use `hatch run pytest` to run the test suite in `tests/`.
+- The reliable lightweight syntax check is `hatch run python3 -m py_compile aplet/*.py`.
+- Useful smoke tests that avoid system mutation: `HOME=$PWD hatch run python3 -m aplet --help`, `HOME=$PWD hatch run python3 -m aplet inv`, and `HOME=$PWD hatch run python3 -m aplet inv search -n sublime-text`.
+- Do not use `hatch run python3 -m aplet install ...` for routine verification. The code shells out with `subprocess.run(..., shell=True, check=True)` and backend methods can write to `/etc` or invoke the real package manager.
 - NEVER test `install`.
 
 ## Incomplete Or Misleading Paths
@@ -38,7 +38,7 @@ The published site is deployed to GitHub Pages from release tags and manual work
 
 
 ## Search Hygiene
-- A project-local `.venv/` exists at the repo root and will pollute file searches. Restrict searches to `aplet/`, tests, and root docs/config files, unless you explicitly need the virtualenv.
+- Restrict broad searches to `aplet/`, `tests/`, and root docs/config files unless external or generated directories are explicitly needed.
 
 ## TODOs
 - [X] Review `pip` manager detection. It says I have it installed but `which` and `python -m pip` report errors. Of course, it is visible because of the virtual environment.

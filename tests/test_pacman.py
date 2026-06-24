@@ -16,6 +16,63 @@ uid           [ultimate] Pacman Keyring Master Key <pacman@localhost>
         assert result == ['5C9E46EDA15BD3DA48C5B6FEABC54C6A04F01098']
         assert 'Pacman Keyring Master Key <pacman@localhost>' in capsys.readouterr().out
 
+    def test_primary_fingerprints_from_key_file_ignores_subkeys(self, modules, monkeypatch, tmp_path):
+        key_file = tmp_path / 'repo.gpg'
+        key_file.write_text('key')
+        gpg_output = '''pub:-:4096:1:AAAAAAAAAAAAAAAA:1:::-:::scESC::::::23::0:
+fpr:::::::::1111111111111111111111111111111111111111:
+uid:-::::1::hash::Demo One <one@example.com>::::::::::0:
+sub:-:4096:1:BBBBBBBBBBBBBBBB:1::::::e::::::23:
+fpr:::::::::2222222222222222222222222222222222222222:
+pub:-:4096:1:CCCCCCCCCCCCCCCC:1:::-:::scESC::::::23::0:
+fpr:::::::::3333333333333333333333333333333333333333:
+'''
+        monkeypatch.setattr(modules.managers.ut.Shell, 'run', lambda cmd, **kwargs: completed(stdout=gpg_output))
+
+        result = modules.managers.Pacman._primary_fingerprints_from_key_file(key_file)
+
+        assert result == [
+            '1111111111111111111111111111111111111111',
+            '3333333333333333333333333333333333333333',
+        ]
+
+    def test_add_gpg_locally_signs_all_primary_keys(self, modules, monkeypatch):
+        gpg_output = '''pub:-:4096:1:AAAAAAAAAAAAAAAA:1:::-:::scESC::::::23::0:
+fpr:::::::::1111111111111111111111111111111111111111:
+pub:-:4096:1:BBBBBBBBBBBBBBBB:1:::-:::scESC::::::23::0:
+fpr:::::::::2222222222222222222222222222222222222222:
+'''
+        commands = []
+
+        def run(cmd, **kwargs):
+            commands.append(cmd)
+            if cmd.startswith('gpg --show-keys'):
+                return completed(stdout=gpg_output)
+            return completed()
+
+        monkeypatch.setattr(modules.managers.ut.Shell, 'run', run)
+
+        modules.managers.Pacman.add_gpg('https://example.com/repo.gpg')
+
+        assert any(command.startswith('curl -fsSL "https://example.com/repo.gpg"') for command in commands)
+        assert commands.count('sudo pacman-key --lsign-key 1111111111111111111111111111111111111111') == 1
+        assert commands.count('sudo pacman-key --lsign-key 2222222222222222222222222222222222222222') == 1
+
+    def test_add_gpg_signs_existing_key_from_downloaded_file(self, modules, monkeypatch):
+        commands = []
+
+        def run(cmd, **kwargs):
+            commands.append(cmd)
+            if cmd.startswith('gpg --show-keys'):
+                return completed(stdout='pub:-:4096:1:AAAAAAAAAAAAAAAA:1:::-:::scESC::::::23::0:\nfpr:::::::::1111111111111111111111111111111111111111:\n')
+            return completed()
+
+        monkeypatch.setattr(modules.managers.ut.Shell, 'run', run)
+
+        modules.managers.Pacman.add_gpg('https://example.com/repo.gpg')
+
+        assert 'sudo pacman-key --lsign-key 1111111111111111111111111111111111111111' in commands
+
     def test_resolve_key_target_handles_unique_suffix_and_ambiguity(self, modules, caplog):
         entries = [
             {'fingerprint': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', 'uid': 'first'},
